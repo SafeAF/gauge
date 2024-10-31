@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RAM Usage Monitor</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>Real-Time RAM Usage</h1>
+  <div style="width: 300px; margin: auto;">
+    <canvas id="ramPieChart" width="300" height="300"></canvas>
+  </div>
+
+  <script>
+    // Initialize Chart.js for a full pie chart
+    const ctx = document.getElementById('ramPieChart').getContext('2d');
+    const ramPieChart = new Chart(ctx, {
+      type: 'doughnut', // Could also use 'pie' for a similar effect
+      data: {
+        labels: ['Used RAM', 'Free RAM'],
+        datasets: [{
+          data: [0, 100], // Initial values (0% used, 100% free)
+          backgroundColor: ['#ff6384', '#36a2eb'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '50%', // Creates a donut effect; use '0%' for a solid pie
+        plugins: {
+          tooltip: { enabled: true },
+          legend: { display: true, position: 'bottom' }
+        }
+      }
+    });
+
+    // Function to update the pie chart
+    function updateRamUsage() {
+      fetch('/ram_usage')
+        .then(response => response.json())
+        .then(data => {
+          const ramUsage = data.ram_usage;
+          ramPieChart.data.datasets[0].data = [ramUsage, 100 - ramUsage];
+          ramPieChart.update();
+        })
+        .catch(error => console.error('Error fetching RAM usage:', error));
+    }
+
+    // Update every 2 seconds
+    setInterval(updateRamUsage, 2000);
+    updateRamUsage(); // Initial call
+  </script>
+</body>
+</html>
